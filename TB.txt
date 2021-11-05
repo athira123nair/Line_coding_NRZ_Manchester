@@ -1,0 +1,58 @@
+`timescale 1ns / 1ps
+
+////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer:
+//
+// Create Date:   08:01:20 11/04/2021
+// Design Name:   code_conv
+// Module Name:   C:/xilinx programs/code_conv/code_conv_tb.v
+// Project Name:  code_conv
+// Target Device:  
+// Tool versions:  P.20131013
+// Description: 
+//
+// Verilog Test Fixture created by ISE for module: code_conv
+//
+// Dependencies:
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+////////////////////////////////////////////////////////////////////////////////
+
+module code_conv_tb;
+
+	// Inputs
+	reg clk1;
+	reg clk2;
+	reg rst;
+	reg d_in;
+
+	// Outputs
+	wire d_out_nrz_mealy;
+	wire d_out_manchester;
+	wire d_out_nrz_moore;
+
+	// Instantiate the Unit Under Test (UUT)
+	code_conv uut (
+		.clk1(clk1), 
+		.clk2(clk2), 
+		.rst(rst), 
+		.d_in(d_in), 
+		.d_out_nrz_mealy(d_out_nrz_mealy), 
+		.d_out_manchester(d_out_manchester), 
+		.d_out_nrz_moore(d_out_nrz_moore)
+	);
+
+	initial begin
+		clk1 = 0; clk2 = 0; rst =1;
+		#20 rst = 0;
+	end
+   always #10 clk1 = ~clk1;
+	always #5  clk2 = ~clk2;
+	
+	always@(posedge clk1)
+	   d_in = {$random}%2;
+endmodule

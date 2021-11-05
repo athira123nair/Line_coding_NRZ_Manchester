@@ -1,0 +1,100 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    18:45:18 11/03/2021 
+// Design Name:    LINE CODING
+// Module Name:    code_conv 
+// Project Name:   LINE CODING - displaying NRZ_MEALY,NRZ_MOORE,MANCHESTER
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
+module code_conv(input clk1,
+                 input clk2,
+					  input rst,
+					  input d_in,
+					  output d_out_nrz_mealy,
+					  output reg d_out_manchester,
+					  output reg d_out_nrz_moore
+    );
+	 parameter S_0 = 4'b0001;
+	 parameter S_1 = 4'b0010;
+	 parameter S_2 = 4'b0100;
+	 parameter S_3 = 4'b1000;
+	 
+	 reg [3:0] present_state_1;
+	 reg [3:0] present_state_2;
+	 reg [3:0] next_state_1;
+	 reg [3:0] next_state_2;
+	 
+	 always@(negedge clk2)
+	 begin
+	 if(rst)
+	 begin
+	    present_state_1 = S_0;
+		 present_state_2 = S_0;
+	 end
+	 else
+	 begin
+	    present_state_1 = next_state_1;
+		 present_state_2 = next_state_2;
+	 end
+	 end
+	 //-----------------------------NRZ_MOORE-------------------------------------------
+	 always@(d_in or present_state_1)
+	 begin
+	    case(present_state_1)
+		   S_0: begin
+			       if(d_in == 0) next_state_1 = S_1;
+					 else next_state_1 = S_3;
+			     end
+		   S_1 : begin
+			        d_out_nrz_moore = 1;
+					  next_state_1 = S_2;
+			      end
+			S_2 : begin
+					  if(d_in == 0)begin d_out_nrz_moore = 0; next_state_1 = S_0; end
+					  else begin d_out_nrz_moore = 1; next_state_1 = S_0; end
+			      end
+		   S_3 : begin
+			        d_out_nrz_moore = 0;
+					  next_state_1 = S_2;
+			      end
+			default : begin next_state_1 = 4'bx ; d_out_nrz_moore = 1'bx; end
+		 endcase
+	 end
+	 //----------------------------NRZ_MANCHESTER ENCODING--------------------------------
+	 always@(d_in or present_state_2)
+	 begin
+	   case(present_state_2)
+		  S_0 : begin
+			       if(d_in == 0) next_state_2 = S_1;
+					 else next_state_2 = S_3;
+			     end
+		   S_1 : begin
+			        d_out_manchester = 0;
+					  next_state_2 = S_2;
+			      end
+			S_2 : begin
+					  if(d_in == 0)begin d_out_manchester = 1; next_state_2 = S_0; end
+					  else begin d_out_manchester = 0; next_state_2 = S_0; end
+			      end
+		   S_3 : begin
+			        d_out_manchester = 1;
+					  next_state_2 = S_2;
+			      end
+			default : begin next_state_2 = 4'bx ; d_out_manchester = 1'bx; end
+		endcase
+	 end
+    //--------------------------NRZ_MEALY---------------------------------------------------
+    assign d_out_nrz_mealy = d_in;	 
+endmodule
